@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Librarium — Book Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Cinzel:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0b0806;
+  --surface: #14100b;
+  --card: #1c1610;
+  --card2: #211a12;
+  --border: rgba(180,140,50,0.22);
+  --gold: #c8a44a;
+  --gold-l: #e6c86a;
+  --gold-dim: rgba(200,164,74,0.15);
+  --cream: #e6d2ad;
+  --muted: #9a7e58;
+  --faint: rgba(200,164,74,0.07);
+  --green: #263d32;
+  --green-l: #3a5e4a;
+  --burg: #5e1a1a;
+  --shadow: rgba(0,0,0,0.7);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+
+body {
+  background: var(--bg);
+  color: var(--cream);
+  font-family: 'EB Garamond', serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── GRAIN ── */
+body::before {
+  content:'';position:fixed;inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+  pointer-events:none;z-index:9999;opacity:0.35;
+}
+
+/* ── HEADER ── */
+header {
+  text-align:center;padding:2.5rem 2rem 0;
+  background:linear-gradient(180deg,#100c07 0%,transparent 100%);
+  border-bottom:1px solid var(--border);
+  padding-bottom:0;
+  position:relative;
+}
+header::before {
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,var(--gold),transparent);
+}
+.h-rune { font-family:'Cinzel',serif;font-size:.72rem;letter-spacing:.55em;color:var(--gold);opacity:.6;margin-bottom:.5rem;text-transform:uppercase}
+header h1 {
+  font-family:'Playfair Display',serif;font-size:3.2rem;font-weight:700;
+  color:var(--gold-l);letter-spacing:.04em;
+  text-shadow:0 0 50px rgba(200,164,74,.25),0 2px 4px rgba(0,0,0,.6);
+  line-height:1.1;
+}
+header h1 em{font-style:italic;color:var(--cream);font-weight:400}
+.h-sub{font-style:italic;color:var(--muted);font-size:.95rem;margin:.4rem 0 0;letter-spacing:.08em}
+
+/* ── NAV ── */
+nav {
+  display:flex;justify-content:center;
+  border-bottom:1px solid var(--border);background:var(--surface);
+  position:sticky;top:0;z-index:100;
+  box-shadow:0 2px 20px rgba(0,0,0,.5);
+}
+nav button {
+  background:none;border:none;border-bottom:2px solid transparent;
+  color:var(--muted);font-family:'Cinzel',serif;font-size:.7rem;
+  letter-spacing:.18em;padding:1.1rem 1.8rem;cursor:pointer;
+  transition:all .25s;text-transform:uppercase;
+}
+nav button:hover{color:var(--cream)}
+nav button.active{color:var(--gold);border-bottom-color:var(--gold);background:var(--gold-dim)}
+
+/* ── TABS ── */
+.tab{display:none;padding:2rem;max-width:1320px;margin:0 auto;animation:rise .35s ease}
+.tab.active{display:block}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+/* ── SECTION TITLE ── */
+.sec {
+  font-family:'Cinzel',serif;font-size:.68rem;letter-spacing:.22em;
+  color:var(--gold);text-transform:uppercase;
+  display:flex;align-items:center;gap:1rem;margin-bottom:1.3rem;
+}
+.sec::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,var(--border),transparent)}
+
+/* ── CARDS ── */
+.card {
+  background:var(--card);border:1px solid var(--border);border-radius:4px;
+  padding:1.5rem;position:relative;overflow:hidden;
+}
+.card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:.18}
+
+/* ── YEAR PROGRESS ── */
+.yp-wrap{margin-bottom:1.5rem}
+.yp-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.2rem;flex-wrap:wrap;gap:.8rem}
+.goal-row{display:flex;align-items:center;gap:.5rem;font-size:.82rem;color:var(--muted)}
+.goal-row input{width:55px;padding:.28rem .5rem;text-align:center;background:rgba(255,255,255,.04);border:1px solid var(--border);color:var(--cream);font-family:'EB Garamond',serif;font-size:.9rem;border-radius:3px;outline:none}
+.goal-row input:focus{border-color:var(--gold)}
+.two-bars{display:flex;flex-direction:column;gap:.9rem}
+.bar-grp{display:flex;flex-direction:column;gap:.3rem}
+.bar-lbl{font-family:'Cinzel',serif;font-size:.62rem;letter-spacing:.14em;color:var(--muted)}
+.track{height:7px;background:rgba(255,255,255,.05);border-radius:4px;overflow:hidden;position:relative}
+.fill-year{height:100%;background:linear-gradient(90deg,#8a6014,var(--gold),var(--gold-l));border-radius:4px;transition:width 1.2s ease}
+.fill-goal{height:100%;background:linear-gradient(90deg,var(--green),var(--green-l),#5a9470);border-radius:4px;transition:width 1.2s ease}
+.bar-meta{display:flex;justify-content:space-between;font-size:.72rem;color:var(--muted);font-style:italic}
+.bar-meta span{color:var(--cream)}
+
+/* ── CURRENTLY READING ── */
+.cr-card{display:flex;align-items:center;gap:1.4rem;margin-bottom:1.5rem;padding:1.3rem 1.5rem}
+.cr-spine{width:48px;min-height:68px;border-radius:2px 5px 5px 2px;flex-shrink:0;box-shadow:3px 4px 12px rgba(0,0,0,.5),inset 2px 0 0 rgba(255,255,255,.1)}
+.cr-lbl{font-family:'Cinzel',serif;font-size:.6rem;letter-spacing:.2em;color:var(--gold);text-transform:uppercase;margin-bottom:.35rem}
+.cr-title{font-family:'Playfair Display',serif;font-size:1.1rem;color:var(--cream);line-height:1.2}
+.cr-auth{font-style:italic;color:var(--muted);font-size:.85rem;margin-top:.1rem}
+
+/* ── STATS ── */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1rem;margin-bottom:1.5rem}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:4px;padding:1.2rem 1.3rem;position:relative;overflow:hidden;transition:transform .2s,border-color .2s;cursor:default}
+.stat-card:hover{transform:translateY(-3px);border-color:rgba(200,164,74,.38)}
+.stat-card::before{content:'';position:absolute;top:0;left:0;width:3px;height:100%;background:linear-gradient(180deg,var(--gold),transparent)}
+.s-icon{font-size:1.3rem;margin-bottom:.5rem;opacity:.75}
+.s-val{font-family:'Playfair Display',serif;font-size:2rem;color:var(--gold-l);line-height:1;margin-bottom:.2rem}
+.s-lbl{font-family:'Cinzel',serif;font-size:.62rem;letter-spacing:.15em;color:var(--muted);text-transform:uppercase}
+
+/* ── MONTHLY BARS ── */
+.monthly-card{margin-bottom:1.5rem}
+.months-row{display:grid;grid-template-columns:repeat(12,1fr);gap:.5rem}
+.mo-cell{text-align:center}
+.mo-name{font-size:.62rem;font-family:'Cinzel',serif;letter-spacing:.08em;color:var(--muted);margin-bottom:.35rem}
+.mo-wrap{height:65px;background:rgba(255,255,255,.03);border-radius:3px;display:flex;align-items:flex-end;overflow:hidden;border:1px solid rgba(255,255,255,.04)}
+.mo-bar{width:100%;border-radius:2px 2px 0 0;transition:height .9s ease;min-height:0}
+.mo-bar.past{background:linear-gradient(180deg,var(--green-l),var(--green))}
+.mo-bar.cur{background:linear-gradient(180deg,var(--gold-l),var(--gold))}
+.mo-bar.fut{background:rgba(255,255,255,.06)}
+.mo-num{font-size:.75rem;color:var(--cream);margin-top:.3rem;font-family:'Playfair Display',serif;min-height:1rem}
+
+/* ── DASHBOARD BOTTOM ROW ── */
+.dash-row{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem}
+
+/* ── DONUT ── */
+.donut-wrap{display:flex;align-items:center;justify-content:center;gap:2rem;flex-wrap:wrap}
+.donut-svg{width:130px;height:130px;flex-shrink:0}
+.legend{display:flex;flex-direction:column;gap:.65rem}
+.leg-item{display:flex;align-items:center;gap:.6rem;font-size:.82rem}
+.leg-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+
+/* ── GENRE ── */
+.genre-row{display:flex;align-items:center;gap:.8rem;margin-bottom:.75rem}
+.genre-name{font-size:.8rem;color:var(--muted);width:110px;flex-shrink:0;font-style:italic;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.genre-track{flex:1;height:6px;background:rgba(255,255,255,.05);border-radius:3px;overflow:hidden}
+.genre-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--gold-l));border-radius:3px}
+.genre-num{font-size:.75rem;color:var(--gold);font-family:'Playfair Display',serif;width:20px;text-align:right}
+
+/* ══════════════════════════════════
+   BOOKCASE
+══════════════════════════════════ */
+.shelf-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem}
+.filter-row{display:flex;gap:.45rem;flex-wrap:wrap}
+.fbtn{background:none;border:1px solid var(--border);color:var(--muted);font-family:'Cinzel',serif;font-size:.62rem;letter-spacing:.12em;padding:.38rem .9rem;cursor:pointer;border-radius:2px;transition:all .2s;text-transform:uppercase}
+.fbtn:hover,.fbtn.active{background:rgba(200,164,74,.1);border-color:var(--gold);color:var(--gold)}
+
+.bookcase {
+  background: linear-gradient(180deg,#090604,#0e0a06);
+  border: 2px solid #3a2714;
+  border-radius:6px;
+  padding:1.5rem 1.5rem 1rem;
+  box-shadow: inset 0 0 80px rgba(0,0,0,.6), 0 10px 50px rgba(0,0,0,.7);
+  position:relative;
+}
+.bookcase::before{
+  content:'';position:absolute;top:-8px;left:-2px;right:-2px;height:10px;
+  background:linear-gradient(180deg,#7a5228,#4a3018,#3a2414);
+  border-radius:5px 5px 0 0;
+  box-shadow:0 -1px 0 #9a6832, inset 0 1px 0 rgba(255,200,100,.15);
+}
+.bookcase::after{
+  content:'';position:absolute;bottom:-8px;left:-2px;right:-2px;height:10px;
+  background:linear-gradient(180deg,#3a2414,#2a1a0a);
+  border-radius:0 0 5px 5px;
+}
+
+/* Shelf row wrapper */
+.shelf-wrap{margin-bottom:1rem;position:relative}
+.shelf-lbl{font-family:'Cinzel',serif;font-size:.58rem;letter-spacing:.2em;color:rgba(180,140,50,.28);text-align:right;margin-bottom:.3rem;text-transform:uppercase}
+.shelf {
+  display:flex;align-items:flex-end;
+  padding:10px 8px 0 8px;
+  min-height:130px;
+  position:relative;
+  gap:3px;
+}
+/* Wooden plank */
+.shelf::after{
+  content:'';position:absolute;
+  bottom:-12px;left:-6px;right:-6px;height:14px;
+  background:linear-gradient(180deg,#7a5228,#5a3a1a,#3e2710);
+  box-shadow:0 3px 10px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,185,90,.2),inset 0 -1px 0 rgba(0,0,0,.4);
+  border-radius:1px;z-index:10;
+}
+
+/* Book spines */
+.bk{
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;position:relative;flex-shrink:0;
+  border-radius:2px 4px 4px 2px;
+  transition:transform .22s cubic-bezier(.34,1.56,.64,1),box-shadow .22s;
+  box-shadow:-2px 0 0 rgba(0,0,0,.5),2px 0 5px rgba(0,0,0,.35),inset 2px 0 0 rgba(255,255,255,.12),inset -1px 0 0 rgba(0,0,0,.3);
+}
+.bk:hover{transform:translateY(-12px) scale(1.04);z-index:20;box-shadow:-2px 0 0 rgba(0,0,0,.5),5px 8px 20px rgba(0,0,0,.6),inset 2px 0 0 rgba(255,255,255,.15)}
+.bk.reading{box-shadow:-2px 0 0 rgba(0,0,0,.4),0 0 15px rgba(200,164,74,.3),3px 2px 8px rgba(0,0,0,.4),inset 2px 0 0 rgba(255,255,255,.12)}
+.bk.want{filter:saturate(.5);opacity:.7}
+.bk.dnf{filter:grayscale(.6);opacity:.65}
+
+.bk-title{
+  writing-mode:vertical-rl;text-orientation:mixed;transform:rotate(180deg);
+  font-size:.58rem;font-family:'EB Garamond',serif;color:rgba(255,255,255,.88);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  max-height:95%;padding:6px 2px;letter-spacing:.04em;
+  text-shadow:0 1px 3px rgba(0,0,0,.6);
+}
+
+/* Tooltip */
+.bk-tip{
+  position:absolute;bottom:calc(100% + 12px);left:50%;transform:translateX(-50%);
+  background:#160f08;border:1px solid var(--gold);border-radius:4px;padding:.9rem 1rem;
+  width:185px;z-index:200;pointer-events:none;opacity:0;
+  transition:opacity .18s;box-shadow:0 10px 30px rgba(0,0,0,.7);
+}
+.bk:hover .bk-tip{opacity:1}
+/* ensure tooltip doesn't go off left edge */
+.bk:first-child .bk-tip,.bk:nth-child(2) .bk-tip{left:0;transform:none}
+.bk:last-child .bk-tip,.bk:nth-last-child(2) .bk-tip{left:auto;right:0;transform:none}
+
+.tip-title{font-family:'Playfair Display',serif;font-size:.9rem;color:var(--gold-l);margin-bottom:.2rem;line-height:1.25}
+.tip-auth{font-style:italic;color:var(--muted);font-size:.75rem;margin-bottom:.4rem}
+.tip-stars{color:var(--gold);font-size:.72rem;margin-bottom:.25rem}
+.tip-genre{font-size:.7rem;color:var(--muted);font-style:italic;margin-bottom:.3rem}
+.badge{display:inline-block;font-size:.58rem;font-family:'Cinzel',serif;letter-spacing:.1em;padding:.1rem .4rem;border-radius:2px;text-transform:uppercase}
+.b-read{background:rgba(45,74,62,.4);color:#65a882;border:1px solid #2e4a3a}
+.b-reading{background:rgba(200,164,74,.12);color:var(--gold);border:1px solid rgba(200,164,74,.3)}
+.b-want{background:rgba(94,26,26,.25);color:#c06868;border:1px solid #5e1a1a}
+.b-dnf{background:rgba(60,60,60,.25);color:#777;border:1px solid #444}
+
+/* Decor items */
+.decor{font-size:1.5rem;align-self:flex-end;margin:0 5px;opacity:.55;flex-shrink:0;padding-bottom:3px}
+
+/* ══════════════════════════════════
+   ADD BOOK FORM
+══════════════════════════════════ */
+.add-wrap{max-width:680px;margin:0 auto}
+.f-title{font-family:'Playfair Display',serif;font-size:1.9rem;font-style:italic;color:var(--gold-l);text-align:center;margin-bottom:.2rem}
+.f-sub{text-align:center;color:var(--muted);font-style:italic;font-size:.9rem;margin-bottom:2rem}
+.f-card{background:var(--card);border:1px solid var(--border);border-radius:4px;padding:2rem}
+.f-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem}
+.fg{display:flex;flex-direction:column;gap:.4rem}
+.fg.full{grid-column:1/-1}
+label{font-family:'Cinzel',serif;font-size:.62rem;letter-spacing:.15em;color:var(--gold);text-transform:uppercase}
+input,select,textarea{background:rgba(255,255,255,.035);border:1px solid rgba(180,140,50,.2);border-radius:3px;color:var(--cream);font-family:'EB Garamond',serif;font-size:.97rem;padding:.62rem .9rem;outline:none;transition:border-color .2s;width:100%}
+input:focus,select:focus,textarea:focus{border-color:var(--gold);background:rgba(200,164,74,.04)}
+select option{background:#180f08;color:var(--cream)}
+textarea{resize:vertical;min-height:80px}
+input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(.5) sepia(1) saturate(3) hue-rotate(10deg)}
+
+.star-row{display:flex;gap:.45rem;padding:.4rem 0}
+.star{background:none;border:none;font-size:1.5rem;cursor:pointer;color:rgba(255,255,255,.18);transition:color .1s,transform .1s;padding:0}
+.star.on,.star:hover~.star,.star:hover{color:var(--gold)}
+.star-row:hover .star{color:var(--gold)}
+.star-row .star:hover~.star{color:rgba(255,255,255,.18)}
+
+.color-row{display:flex;gap:.5rem;flex-wrap:wrap;padding:.35rem 0}
+.col-opt{width:26px;height:26px;border-radius:3px;cursor:pointer;border:2px solid transparent;transition:transform .18s,border-color .18s}
+.col-opt:hover{transform:scale(1.2)}
+.col-opt.sel{border-color:var(--gold-l);transform:scale(1.18)}
+
+.sub-btn{width:100%;padding:1rem;background:linear-gradient(135deg,#c8a44a,#9e7c20);border:none;border-radius:3px;color:#0a0703;font-family:'Cinzel',serif;font-size:.72rem;letter-spacing:.22em;text-transform:uppercase;cursor:pointer;margin-top:1rem;transition:opacity .2s,transform .2s;font-weight:600}
+.sub-btn:hover{opacity:.9;transform:translateY(-1px)}
+.sub-btn:active{transform:translateY(0)}
+
+/* ══════════════════════════════════
+   LIBRARY
+══════════════════════════════════ */
+.lib-controls{display:flex;gap:.9rem;margin-bottom:1.5rem;align-items:center}
+.lib-search{flex:1;background:var(--card);border:1px solid var(--border);border-radius:3px;color:var(--cream);font-family:'EB Garamond',serif;font-size:1rem;padding:.72rem 1rem;outline:none}
+.lib-search:focus{border-color:var(--gold)}
+.lib-search::placeholder{color:var(--muted);font-style:italic}
+.lib-select{background:var(--card);border:1px solid var(--border);color:var(--muted);padding:.72rem .8rem;border-radius:3px;font-family:'Cinzel',serif;font-size:.65rem;letter-spacing:.08em;outline:none;cursor:pointer}
+.lib-select:focus{border-color:var(--gold)}
+
+.book-list{display:flex;flex-direction:column;gap:.65rem}
+.bk-row{background:var(--card);border:1px solid var(--border);border-radius:4px;padding:1rem 1.2rem;display:flex;align-items:center;gap:1.2rem;transition:border-color .2s}
+.bk-row:hover{border-color:rgba(200,164,74,.32)}
+.bk-stripe{width:4px;align-self:stretch;border-radius:2px;flex-shrink:0}
+.bk-info{flex:1;min-width:0}
+.bk-row-title{font-family:'Playfair Display',serif;font-size:1rem;color:var(--cream);margin-bottom:.08rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bk-row-auth{font-style:italic;color:var(--muted);font-size:.84rem}
+.bk-meta{display:flex;gap:.9rem;align-items:center;flex-wrap:wrap}
+.bk-del{background:none;border:none;color:rgba(255,255,255,.14);cursor:pointer;font-size:1rem;transition:color .2s;padding:.2rem;line-height:1}
+.bk-del:hover{color:#c06060}
+
+.empty{text-align:center;padding:4rem 2rem;color:var(--muted)}
+.empty .big{font-size:3rem;margin-bottom:1rem;opacity:.35;display:block}
+
+/* ── MISC ── */
+@media(max-width:780px){
+  header h1{font-size:2.2rem}
+  .f-row{grid-template-columns:1fr}
+  .dash-row{grid-template-columns:1fr}
+  .months-row{grid-template-columns:repeat(6,1fr)}
+  nav button{padding:.85rem 1rem;font-size:.62rem}
+  .tab{padding:1rem}
+  .stats-grid{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:480px){
+  nav button{padding:.7rem .6rem;letter-spacing:.06em}
+  .months-row{grid-template-columns:repeat(4,1fr)}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="h-rune">✦ &nbsp; The Librarium &nbsp; ✦</div>
+  <h1><em>Your</em> Book Tracker</h1>
+  <p class="h-sub" id="hSub"></p>
+  <nav>
+    <button class="active" onclick="switchTab('dashboard',this)">Dashboard</button>
+    <button onclick="switchTab('shelves',this)">My Shelves</button>
+    <button onclick="switchTab('library',this)">Library</button>
+    <button onclick="switchTab('add',this)">✦ Add Book</button>
+  </nav>
+</header>
+
+<!-- ══ DASHBOARD ══ -->
+<div class="tab active" id="tab-dashboard">
+
+  <!-- Year progress -->
+  <div class="card yp-wrap">
+    <div class="yp-header">
+      <div class="sec" style="margin:0">✦ &nbsp; <span id="curYear"></span> &nbsp; Progress</div>
+      <div class="goal-row">
+        Reading goal:
+        <input type="number" id="goalIn" min="1" max="999" value="24" onchange="saveGoal(this.value)">
+        books this year
+      </div>
+    </div>
+    <div class="two-bars">
+      <div class="bar-grp">
+        <div class="bar-lbl">Year elapsed</div>
+        <div class="track"><div class="fill-year" id="barYear" style="width:0%"></div></div>
+        <div class="bar-meta"><em>Jan 1</em><span id="pctYear">0%</span><em>Dec 31</em></div>
+      </div>
+      <div class="bar-grp">
+        <div class="bar-lbl">Reading goal</div>
+        <div class="track"><div class="fill-goal" id="barGoal" style="width:0%"></div></div>
+        <div class="bar-meta"><em>0</em><span id="pctGoal">0 / 24</span><span id="goalLbl">24</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Currently reading -->
+  <div id="crSection"></div>
+
+  <!-- Stats grid -->
+  <div class="stats-grid">
+    <div class="stat-card"><div class="s-icon">📚</div><div class="s-val" id="sRead">0</div><div class="s-lbl">Books Read</div></div>
+    <div class="stat-card"><div class="s-icon">📄</div><div class="s-val" id="sPages">0</div><div class="s-lbl">Pages Read</div></div>
+    <div class="stat-card"><div class="s-icon">⭐</div><div class="s-val" id="sRating">—</div><div class="s-lbl">Avg Rating</div></div>
+    <div class="stat-card"><div class="s-icon">💰</div><div class="s-val" id="sCost">₹0</div><div class="s-lbl">Spent on Books</div></div>
+    <div class="stat-card"><div class="s-icon">🎯</div><div class="s-val" id="sWish">0</div><div class="s-lbl">Wishlist</div></div>
+    <div class="stat-card"><div class="s-icon">📖</div><div class="s-val" id="sNow">0</div><div class="s-lbl">Currently Reading</div></div>
+  </div>
+
+  <!-- Monthly -->
+  <div class="card monthly-card">
+    <div class="sec">Monthly Reading — <span id="yearLbl2"></span></div>
+    <div class="months-row" id="monthRow"></div>
+  </div>
+
+  <!-- Bottom row -->
+  <div class="dash-row">
+    <div class="card">
+      <div class="sec">Reading Status</div>
+      <div class="donut-wrap">
+        <svg class="donut-svg" viewBox="0 0 42 42" id="dSvg">
+          <circle cx="21" cy="21" r="15.92" fill="transparent" stroke="#1a1208" stroke-width="7.5"/>
+          <circle id="dRead"    cx="21" cy="21" r="15.92" fill="transparent" stroke="#3a5e4a" stroke-width="7.5" stroke-dasharray="0 100" stroke-dashoffset="25" transform="rotate(-90 21 21)"/>
+          <circle id="dReading" cx="21" cy="21" r="15.92" fill="transparent" stroke="#c8a44a" stroke-width="7.5" stroke-dasharray="0 100" stroke-dashoffset="25" transform="rotate(-90 21 21)"/>
+          <circle id="dWant"    cx="21" cy="21" r="15.92" fill="transparent" stroke="#5e1a1a" stroke-width="7.5" stroke-dasharray="0 100" stroke-dashoffset="25" transform="rotate(-90 21 21)"/>
+          <circle id="dDnf"     cx="21" cy="21" r="15.92" fill="transparent" stroke="#333"   stroke-width="7.5" stroke-dasharray="0 100" stroke-dashoffset="25" transform="rotate(-90 21 21)"/>
+          <text x="21" y="23.5" text-anchor="middle" fill="#e6d2ad" font-size="6.5" font-family="Playfair Display" id="dTotal">0</text>
+        </svg>
+        <div class="legend">
+          <div class="leg-item"><div class="leg-dot" style="background:#3a5e4a"></div><span style="color:var(--muted)">Read &nbsp;</span><strong id="lRead">0</strong></div>
+          <div class="leg-item"><div class="leg-dot" style="background:#c8a44a"></div><span style="color:var(--muted)">Reading &nbsp;</span><strong id="lReading">0</strong></div>
+          <div class="leg-item"><div class="leg-dot" style="background:#5e1a1a"></div><span style="color:var(--muted)">Wishlist &nbsp;</span><strong id="lWant">0</strong></div>
+          <div class="leg-item"><div class="leg-dot" style="background:#333"></div><span style="color:var(--muted)">DNF &nbsp;</span><strong id="lDnf">0</strong></div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="sec">Top Genres</div>
+      <div id="genreBox"><p style="color:var(--muted);font-style:italic;font-size:.85rem">Add books to see your genre breakdown.</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SHELVES ══ -->
+<div class="tab" id="tab-shelves">
+  <div class="shelf-header">
+    <div>
+      <div class="sec" style="margin-bottom:.3rem">My Bookshelf</div>
+      <p style="color:var(--muted);font-style:italic;font-size:.85rem">Hover any book to see details</p>
+    </div>
+    <div class="filter-row">
+      <button class="fbtn active" onclick="setFilter('all',this)">All</button>
+      <button class="fbtn" onclick="setFilter('read',this)">Read</button>
+      <button class="fbtn" onclick="setFilter('reading',this)">Reading</button>
+      <button class="fbtn" onclick="setFilter('want',this)">Wishlist</button>
+      <button class="fbtn" onclick="setFilter('dnf',this)">DNF</button>
+    </div>
+  </div>
+  <div class="bookcase" id="bookcase"></div>
+</div>
+
+<!-- ══ LIBRARY ══ -->
+<div class="tab" id="tab-library">
+  <div class="lib-controls">
+    <input class="lib-search" type="text" placeholder="Search title or author…" oninput="renderLib(this.value)">
+    <select class="lib-select" id="libSel" onchange="renderLib()">
+      <option value="all">All Books</option>
+      <option value="read">Read</option>
+      <option value="reading">Reading</option>
+      <option value="want">Wishlist</option>
+      <option value="dnf">DNF</option>
+    </select>
+  </div>
+  <div class="book-list" id="bookList"></div>
+</div>
+
+<!-- ══ ADD ══ -->
+<div class="tab" id="tab-add">
+  <div class="add-wrap">
+    <div class="f-title">Add to Your Collection</div>
+    <p class="f-sub">Every great library began with a single book.</p>
+    <div class="f-card">
+      <div class="f-row">
+        <div class="fg"><label>Title *</label><input id="fT" type="text" placeholder="The Name of the Wind…"></div>
+        <div class="fg"><label>Author *</label><input id="fA" type="text" placeholder="Patrick Rothfuss…"></div>
+      </div>
+      <div class="f-row">
+        <div class="fg">
+          <label>Genre</label>
+          <select id="fG">
+            <option value="">— Select genre —</option>
+            <option>Fantasy</option><option>Science Fiction</option><option>Literary Fiction</option>
+            <option>Mystery & Thriller</option><option>Romance</option><option>Historical Fiction</option>
+            <option>Horror</option><option>Non-Fiction</option><option>Biography</option>
+            <option>Self-Help</option><option>Poetry</option><option>Classics</option>
+            <option>Young Adult</option><option>Graphic Novel</option><option>Mythology</option><option>Other</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label>Format</label>
+          <select id="fFmt">
+            <option value="physical">📖 Physical</option>
+            <option value="ebook">💻 E-Book</option>
+            <option value="audiobook">🎧 Audiobook</option>
+          </select>
+        </div>
+      </div>
+      <div class="f-row">
+        <div class="fg">
+          <label>Status</label>
+          <select id="fSt">
+            <option value="want">📋 Wishlist</option>
+            <option value="reading">📖 Currently Reading</option>
+            <option value="read">✅ Read</option>
+            <option value="dnf">❌ Did Not Finish</option>
+          </select>
+        </div>
+        <div class="fg"><label>Pages</label><input id="fP" type="number" placeholder="e.g. 662" min="1"></div>
+      </div>
+      <div class="f-row">
+        <div class="fg"><label>Cost (₹)</label><input id="fC" type="number" placeholder="e.g. 499" min="0"></div>
+        <div class="fg"><label>Wishlist Price (₹)</label><input id="fWC" type="number" placeholder="e.g. 799" min="0"></div>
+      </div>
+      <div class="f-row">
+        <div class="fg"><label>Date Started</label><input id="fS" type="date"></div>
+        <div class="fg"><label>Date Finished</label><input id="fE" type="date"></div>
+      </div>
+      <div class="fg" style="margin-bottom:1rem">
+        <label>Your Rating</label>
+        <div class="star-row" id="starRow">
+          <button class="star" data-v="1" onclick="setRating(1)">★</button>
+          <button class="star" data-v="2" onclick="setRating(2)">★</button>
+          <button class="star" data-v="3" onclick="setRating(3)">★</button>
+          <button class="star" data-v="4" onclick="setRating(4)">★</button>
+          <button class="star" data-v="5" onclick="setRating(5)">★</button>
+        </div>
+      </div>
+      <div class="fg" style="margin-bottom:1rem">
+        <label>Spine Colour</label>
+        <div class="color-row" id="colorRow"></div>
+      </div>
+      <div class="fg full" style="margin-bottom:0">
+        <label>Notes & Review</label>
+        <textarea id="fN" placeholder="What did you think? Favourite lines, feelings, spoilers…"></textarea>
+      </div>
+      <button class="sub-btn" id="subBtn" onclick="addBook()">✦ &nbsp; Add to Library &nbsp; ✦</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════
+   DATA & STATE
+═══════════════════════════════════════════ */
+const SPINE_COLORS = [
+  '#7a3e1a','#2c4830','#5a1a1a','#1a3555','#3e1e5a','#285a3a',
+  '#7a5514','#1a4242','#621e10','#341860','#48380c','#185040',
+  '#8b3a10','#1a3a10','#5a3210','#281458','#701a1a','#155454',
+  '#603c16','#305a14','#4e1838','#154430','#726010','#324460',
+  '#4a1e0a','#0e3828','#6e2a2a','#0e2a4e','#4a1250','#1a4a1a',
+];
+
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const DECORS = ['🕯️','🌿','🗝️','⏳','🦉','🌙','🔮','📜','🪴','🦋','🏺','🧭'];
+
+let books = [];
+let goal = 24;
+let selRating = 0;
+let selColor = SPINE_COLORS[0];
+let shelfFilter = 'all';
+
+try { books = JSON.parse(localStorage.getItem('lib_books') || '[]'); } catch(e){}
+try { goal = parseInt(localStorage.getItem('lib_goal')) || 24; } catch(e){}
+
+/* ═══════════════════════════════════════════
+   BOOT
+═══════════════════════════════════════════ */
+const now = new Date();
+document.getElementById('curYear').textContent = now.getFullYear();
+document.getElementById('yearLbl2').textContent = now.getFullYear();
+document.getElementById('goalIn').value = goal;
+document.getElementById('goalLbl').textContent = goal;
+document.getElementById('hSub').textContent =
+  `A sanctuary for the devoted reader · ${now.getFullYear()}`;
+
+buildColorPicker();
+updateAll();
+
+/* ═══════════════════════════════════════════
+   TABS
+═══════════════════════════════════════════ */
+function switchTab(id, btn) {
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  if(btn) btn.classList.add('active');
+  if(id==='shelves') renderShelves();
+  if(id==='library') renderLib();
+}
+
+function goAdd() {
+  const btns = document.querySelectorAll('nav button');
+  btns.forEach(b=>b.classList.remove('active'));
+  btns[3].classList.add('active');
+  switchTab('add');
+}
+
+/* ═══════════════════════════════════════════
+   SAVE
+═══════════════════════════════════════════ */
+function save() { localStorage.setItem('lib_books', JSON.stringify(books)); }
+function saveGoal(v) {
+  goal = parseInt(v)||24;
+  localStorage.setItem('lib_goal',goal);
+  document.getElementById('goalLbl').textContent = goal;
+  updateYP();
+}
+
+/* ═══════════════════════════════════════════
+   UPDATE ALL
+═══════════════════════════════════════════ */
+function updateAll() {
+  updateYP();
+  updateCR();
+  updateStats();
+  updateMonthly();
+  updateDonut();
+  updateGenres();
+  renderShelves();
+  renderLib();
+}
+
+/* ── Year Progress ── */
+function updateYP() {
+  const y = now.getFullYear();
+  const start = new Date(y,0,1), end = new Date(y+1,0,1);
+  const pct = Math.round(((now-start)/(end-start))*100);
+  document.getElementById('barYear').style.width = pct+'%';
+  document.getElementById('pctYear').textContent = pct+'%';
+
+  const booksRead = books.filter(b=>b.status==='read').length;
+  const gp = Math.min(100, Math.round((booksRead/goal)*100));
+  document.getElementById('barGoal').style.width = gp+'%';
+  document.getElementById('pctGoal').textContent = booksRead+' / '+goal;
+}
+
+/* ── Currently Reading ── */
+function updateCR() {
+  const reading = books.filter(b=>b.status==='reading');
+  const el = document.getElementById('crSection');
+  if(!reading.length){el.innerHTML='';return;}
+  const b = reading[0];
+  el.innerHTML = `<div class="card cr-card" style="margin-bottom:1.5rem">
+    <div class="cr-spine" style="background:${b.color}"></div>
+    <div>
+      <div class="cr-lbl">📖 Currently Reading</div>
+      <div class="cr-title">${esc(b.title)}</div>
+      <div class="cr-auth">by ${esc(b.author)}</div>
+      ${b.pages?`<div style="margin-top:.5rem;font-size:.78rem;color:var(--muted);font-style:italic">${b.pages} pages · in progress</div>`:''}
+    </div>
+    ${reading.length>1?`<div style="margin-left:auto;color:var(--muted);font-size:.8rem;font-style:italic">+${reading.length-1} more</div>`:''}
+  </div>`;
+}
+
+/* ── Stats ── */
+function updateStats() {
+  const read = books.filter(b=>b.status==='read');
+  const pages = read.reduce((s,b)=>s+(parseInt(b.pages)||0),0);
+  const cost = books.filter(b=>b.cost).reduce((s,b)=>s+(parseFloat(b.cost)||0),0);
+  const rated = read.filter(b=>b.rating);
+  const avg = rated.length ? (rated.reduce((s,b)=>s+b.rating,0)/rated.length).toFixed(1) : '—';
+
+  document.getElementById('sRead').textContent = read.length;
+  document.getElementById('sPages').textContent = pages>9999?(pages/1000).toFixed(1)+'k':pages;
+  document.getElementById('sRating').textContent = avg;
+  document.getElementById('sCost').textContent = '₹'+Math.round(cost);
+  document.getElementById('sWish').textContent = books.filter(b=>b.status==='want').length;
+  document.getElementById('sNow').textContent = books.filter(b=>b.status==='reading').length;
+}
+
+/* ── Monthly ── */
+function updateMonthly() {
+  const yr = now.getFullYear(), curMo = now.getMonth();
+  const counts = Array(12).fill(0);
+  books.filter(b=>b.status==='read'&&b.endDate).forEach(b=>{
+    const d = new Date(b.endDate);
+    if(d.getFullYear()===yr) counts[d.getMonth()]++;
+  });
+  const mx = Math.max(...counts,1);
+  document.getElementById('monthRow').innerHTML = MONTHS.map((m,i)=>{
+    const c = counts[i];
+    const future = i > curMo;
+    const cls = future?'fut':i===curMo?'cur':'past';
+    const h = c ? Math.round((c/mx)*52)+5 : 0;
+    return `<div class="mo-cell">
+      <div class="mo-name">${m}</div>
+      <div class="mo-wrap"><div class="mo-bar ${cls}" style="height:${h}px"></div></div>
+      <div class="mo-num">${c||''}</div>
+    </div>`;
+  }).join('');
+}
+
+/* ── Donut ── */
+function updateDonut() {
+  const total = books.length;
+  document.getElementById('dTotal').textContent = total;
+  const c = {
+    read:    books.filter(b=>b.status==='read').length,
+    reading: books.filter(b=>b.status==='reading').length,
+    want:    books.filter(b=>b.status==='want').length,
+    dnf:     books.filter(b=>b.status==='dnf').length,
+  };
+  ['read','reading','want','dnf'].forEach(s=>{
+    document.getElementById('l'+s.charAt(0).toUpperCase()+s.slice(1)).textContent = c[s];
+  });
+  if(!total) return;
+  const circ = 100;
+  const arcs = [
+    {id:'dRead',count:c.read},
+    {id:'dReading',count:c.reading},
+    {id:'dWant',count:c.want},
+    {id:'dDnf',count:c.dnf},
+  ];
+  let off = 25;
+  arcs.forEach(a=>{
+    const p = (a.count/total)*circ;
+    const el = document.getElementById(a.id);
+    el.setAttribute('stroke-dasharray',`${p} ${circ-p}`);
+    el.setAttribute('stroke-dashoffset',(circ-off+25).toString());
+    off += p;
+  });
+}
+
+/* ── Genres ── */
+function updateGenres() {
+  const box = document.getElementById('genreBox');
+  const map = {};
+  books.filter(b=>b.genre).forEach(b=>{ map[b.genre]=(map[b.genre]||0)+1; });
+  const sorted = Object.entries(map).sort((a,b)=>b[1]-a[1]).slice(0,7);
+  if(!sorted.length){box.innerHTML='<p style="color:var(--muted);font-style:italic;font-size:.85rem">Add books to see your genre breakdown.</p>';return;}
+  const mx = sorted[0][1];
+  box.innerHTML = sorted.map(([g,c])=>`<div class="genre-row">
+    <div class="genre-name">${esc(g)}</div>
+    <div class="genre-track"><div class="genre-fill" style="width:${(c/mx)*100}%"></div></div>
+    <div class="genre-num">${c}</div>
+  </div>`).join('');
+}
+
+/* ═══════════════════════════════════════════
+   BOOKSHELF
+═══════════════════════════════════════════ */
+function setFilter(f, btn) {
+  shelfFilter = f;
+  document.querySelectorAll('.fbtn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderShelves();
+}
+
+function renderShelves() {
+  const bc = document.getElementById('bookcase');
+  const filtered = shelfFilter==='all' ? books : books.filter(b=>b.status===shelfFilter);
+
+  if(!filtered.length) {
+    bc.innerHTML = `<div style="color:rgba(180,140,50,.18);text-align:center;padding:4rem 2rem;font-style:italic;font-size:1.05rem">
+      Your shelves await their first tome…<br><br>
+      <button onclick="goAdd()" style="background:none;border:1px solid rgba(200,164,74,.25);color:var(--gold);font-family:'Cinzel',serif;font-size:.65rem;letter-spacing:.15em;padding:.5rem 1.2rem;cursor:pointer;border-radius:2px;text-transform:uppercase">Add a Book</button>
+    </div>`;
+    return;
+  }
+
+  const PER_SHELF = 8;
+  const shelves = [];
+  for(let i=0;i<filtered.length;i+=PER_SHELF) shelves.push(filtered.slice(i,i+PER_SHELF));
+
+  bc.innerHTML = shelves.map((shelf, si) => {
+    const hasSpace = shelf.length < PER_SHELF;
+    const decorA = DECORS[si*2 % DECORS.length];
+    const decorB = DECORS[(si*2+1) % DECORS.length];
+
+    const spines = shelf.map((b,bi)=>{
+      const w = 20 + (b.title.length % 3)*5 + (bi%3)*4; // varied width
+      const h = 90 + (bi%4)*15 + (b.author.length%3)*8;
+      const stars = b.rating ? '★'.repeat(b.rating) : '';
+      const label = {read:'Read',reading:'Reading',want:'Wishlist',dnf:'DNF'}[b.status];
+      const badge = `b-${b.status}`;
+      return `<div class="bk ${b.status}" style="width:${w}px;height:${h}px;background:linear-gradient(160deg,${lighten(b.color)},${b.color} 30%,${darken(b.color)})">
+        <div class="bk-title">${esc(b.title)}</div>
+        <div class="bk-tip">
+          <div class="tip-title">${esc(b.title)}</div>
+          <div class="tip-auth">by ${esc(b.author)}</div>
+          ${stars?`<div class="tip-stars">${stars}</div>`:''}
+          ${b.genre?`<div class="tip-genre">${esc(b.genre)}</div>`:''}
+          ${b.pages?`<div style="font-size:.7rem;color:var(--muted)">${b.pages} pages</div>`:''}
+          <div style="margin-top:.3rem"><span class="badge ${badge}">${label}</span></div>
+        </div>
+      </div>`;
+    }).join('');
+
+    return `<div class="shelf-wrap">
+      <div class="shelf-lbl">Shelf ${si+1} &nbsp;·&nbsp; ${shelf.length} book${shelf.length!==1?'s':''}</div>
+      <div class="shelf">
+        ${si%3===0?`<div class="decor">${decorA}</div>`:''}
+        ${spines}
+        ${hasSpace&&si%2===0?`<div class="decor">${decorB}</div>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function lighten(hex) {
+  try {
+    let r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
+    r=Math.min(255,r+40);g=Math.min(255,g+40);b=Math.min(255,b+40);
+    return `rgb(${r},${g},${b})`;
+  } catch(e){return hex}
+}
+function darken(hex) {
+  try {
+    let r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
+    r=Math.max(0,r-25);g=Math.max(0,g-25);b=Math.max(0,b-25);
+    return `rgb(${r},${g},${b})`;
+  } catch(e){return hex}
+}
+
+/* ═══════════════════════════════════════════
+   LIBRARY
+═══════════════════════════════════════════ */
+function renderLib(q) {
+  const search = (q !== undefined ? q : (document.querySelector('.lib-search')?.value||'')).toLowerCase();
+  const filter = document.getElementById('libSel')?.value||'all';
+  const el = document.getElementById('bookList');
+
+  let list = books.filter(b=>{
+    const ms = !search || b.title.toLowerCase().includes(search) || b.author.toLowerCase().includes(search);
+    const mf = filter==='all' || b.status===filter;
+    return ms && mf;
+  });
+
+  if(!list.length){
+    el.innerHTML=`<div class="empty"><span class="big">📚</span>No books found. <a href="#" onclick="goAdd();return false" style="color:var(--gold)">Add one →</a></div>`;
+    return;
+  }
+
+  const SL = {read:'Read ✅',reading:'Reading 📖',want:'Wishlist 📋',dnf:'DNF ❌'};
+  el.innerHTML = list.map((b,i)=>{
+    const stars = b.rating ? '★'.repeat(b.rating)+'<span style="opacity:.2">'+('★'.repeat(5-b.rating))+'</span>' : '<span style="opacity:.2">★★★★★</span>';
+    return `<div class="bk-row">
+      <div class="bk-stripe" style="background:${b.color}"></div>
+      <div class="bk-info">
+        <div class="bk-row-title">${esc(b.title)}</div>
+        <div class="bk-row-auth">by ${esc(b.author)}</div>
+      </div>
+      <div class="bk-meta">
+        ${b.genre?`<span style="color:var(--muted);font-size:.78rem;font-style:italic">${esc(b.genre)}</span>`:''}
+        <span style="color:var(--gold);font-size:.78rem">${stars}</span>
+        <span class="badge b-${b.status}">${SL[b.status]}</span>
+        ${b.pages?`<span style="color:var(--muted);font-size:.78rem">${b.pages}p</span>`:''}
+        ${b.cost?`<span style="color:var(--muted);font-size:.78rem">₹${b.cost}</span>`:''}
+      </div>
+      <button class="bk-del" onclick="delBook(${books.indexOf(b)})" title="Remove">✕</button>
+    </div>`;
+  }).join('');
+}
+
+function delBook(i) {
+  if(confirm('Remove "'+books[i].title+'" from your library?')){
+    books.splice(i,1);save();updateAll();
+  }
+}
+
+/* ═══════════════════════════════════════════
+   ADD BOOK FORM
+═══════════════════════════════════════════ */
+function buildColorPicker() {
+  document.getElementById('colorRow').innerHTML = SPINE_COLORS.map((c,i)=>
+    `<div class="col-opt${i===0?' sel':''}" style="background:${c}" onclick="selCol('${c}',this)" title="${c}"></div>`
+  ).join('');
+}
+
+function selCol(c,el) {
+  selColor=c;
+  document.querySelectorAll('.col-opt').forEach(e=>e.classList.remove('sel'));
+  el.classList.add('sel');
+}
+
+function setRating(v) {
+  selRating = v;
+  document.querySelectorAll('.star').forEach((s,i)=>s.classList.toggle('on',i<v));
+}
+
+function addBook() {
+  const title = document.getElementById('fT').value.trim();
+  const author = document.getElementById('fA').value.trim();
+  if(!title||!author){alert('Please enter at least a title and author.');return;}
+
+  books.unshift({
+    id: Date.now(),
+    title, author,
+    genre:   document.getElementById('fG').value,
+    format:  document.getElementById('fFmt').value,
+    status:  document.getElementById('fSt').value,
+    pages:   document.getElementById('fP').value,
+    cost:    document.getElementById('fC').value,
+    wCost:   document.getElementById('fWC').value,
+    startDate: document.getElementById('fS').value,
+    endDate: document.getElementById('fE').value,
+    rating:  selRating,
+    color:   selColor,
+    notes:   document.getElementById('fN').value,
+    addedAt: new Date().toISOString(),
+  });
+
+  save(); updateAll();
+
+  // Reset
+  ['fT','fA','fP','fC','fWC','fS','fE','fN'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('fG').value='';
+  document.getElementById('fSt').value='want';
+  document.getElementById('fFmt').value='physical';
+  selRating=0;
+  document.querySelectorAll('.star').forEach(s=>s.classList.remove('on'));
+  selColor=SPINE_COLORS[0];
+  buildColorPicker();
+
+  const btn = document.getElementById('subBtn');
+  btn.textContent='✦  Added to your library!  ✦';
+  btn.style.background='linear-gradient(135deg,#3a5e4a,#2c4830)';
+  btn.style.color='#90d4b0';
+  setTimeout(()=>{
+    btn.textContent='✦ \u00A0 Add to Library \u00A0 ✦';
+    btn.style.background='';
+    btn.style.color='';
+  },2200);
+}
+
+/* ── Util ── */
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+</script>
+</body>
+</html>

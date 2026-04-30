@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OBSCURA — Vintage Film Filters</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Special+Elite&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0d0a06;color:#e8d5b0;font-family:'Special Elite',monospace;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:2rem 1rem 4rem}
+
+.app-title{font-family:'Playfair Display',serif;font-size:42px;font-weight:400;letter-spacing:14px;color:#f0e2c0;margin-bottom:4px;text-align:center}
+.app-sub{font-size:10px;letter-spacing:4px;color:#6b5535;margin-bottom:2.5rem;text-align:center}
+
+.divider{width:100%;max-width:680px;border:none;border-top:1px solid #2a1e0e;margin:0 0 2rem}
+
+.upload-zone{width:100%;max-width:680px;border:1px dashed #3d2e14;border-radius:12px;padding:4rem 2rem;text-align:center;cursor:pointer;transition:border-color 0.2s,background 0.2s}
+.upload-zone:hover,.upload-zone.drag{border-color:#7a5c30;background:rgba(122,92,48,0.05)}
+.u-icon{width:48px;height:48px;border-radius:50%;border:1px solid #3d2e14;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;font-size:22px;color:#7a5c30}
+.u-text{font-size:16px;color:#a08060;margin-bottom:6px}
+.u-hint{font-size:11px;letter-spacing:2px;color:#4a3520}
+
+#preview{display:none;width:100%;max-width:680px;flex-direction:column;align-items:center}
+
+.canvas-wrap{width:100%;text-align:center;margin-bottom:1rem;border-radius:8px;overflow:hidden;background:#0a0704;position:relative}
+#mainCanvas{display:block;margin:0 auto;max-width:100%;max-height:420px}
+
+.film-edge{display:flex;gap:6px;width:100%;overflow:hidden;margin-bottom:0.75rem;justify-content:center;opacity:0.25}
+.sprocket{width:14px;height:14px;border:2px solid #6b5535;border-radius:2px;flex-shrink:0}
+
+.sec-label{font-size:9px;letter-spacing:3px;color:#5a4020;margin:1rem 0 8px;width:100%;text-align:left}
+
+.filter-strip{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;width:100%;scrollbar-width:thin;scrollbar-color:#3d2e14 transparent;margin-bottom:0.5rem}
+.filter-strip::-webkit-scrollbar{height:3px}
+.filter-strip::-webkit-scrollbar-track{background:transparent}
+.filter-strip::-webkit-scrollbar-thumb{background:#3d2e14;border-radius:2px}
+
+.fi{flex:0 0 auto;cursor:pointer;text-align:center;background:none;border:none;padding:0}
+.fi-thumb{width:80px;height:60px;border-radius:4px;overflow:hidden;border:1.5px solid #2a1e0e;transition:border-color 0.2s,transform 0.15s;position:relative}
+.fi:hover .fi-thumb{border-color:#7a5c30;transform:scale(1.03)}
+.fi.active .fi-thumb{border-color:#d4913a;border-width:2px}
+.fi-thumb canvas{width:80px;height:60px;display:block}
+.fi-name{font-size:9px;letter-spacing:0.5px;color:#6b5535;margin-top:4px;transition:color 0.15s}
+.fi.active .fi-name{color:#d4913a}
+
+.controls{width:100%;display:flex;flex-direction:column;gap:10px;margin:0.5rem 0}
+.ctrl-row{display:flex;align-items:center;gap:12px}
+.ctrl-lbl{font-size:9px;letter-spacing:2px;color:#6b5535;width:76px;flex-shrink:0}
+.ctrl-row input[type=range]{flex:1;-webkit-appearance:none;appearance:none;height:2px;background:#2a1e0e;border-radius:1px;outline:none}
+.ctrl-row input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:#d4913a;cursor:pointer;transition:transform 0.15s;box-shadow:0 0 0 3px rgba(212,145,58,0.15)}
+.ctrl-row input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
+.ctrl-row input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:#d4913a;cursor:pointer;border:none}
+.ctrl-val{font-size:11px;color:#a08060;min-width:36px;text-align:right}
+
+.actions{display:flex;gap:10px;width:100%;margin-top:0.75rem}
+#dlBtn{flex:1;background:#d4913a;color:#0d0a06;border:none;padding:12px 20px;border-radius:6px;font-family:'Special Elite',monospace;font-size:12px;letter-spacing:2px;cursor:pointer;transition:background 0.2s}
+#dlBtn:hover{background:#e8a84d}
+.new-btn{background:none;border:1px solid #2a1e0e;color:#6b5535;padding:12px 16px;border-radius:6px;font-family:'Special Elite',monospace;font-size:11px;letter-spacing:1px;cursor:pointer;transition:border-color 0.2s,color 0.2s}
+.new-btn:hover{border-color:#3d2e14;color:#a08060}
+
+.film-info{display:flex;justify-content:space-between;width:100%;margin-top:1rem;padding-top:1rem;border-top:1px solid #1a1208}
+.info-item{text-align:center}
+.info-val{font-size:14px;color:#a08060;display:block}
+.info-lbl{font-size:9px;letter-spacing:2px;color:#4a3520;margin-top:2px;display:block}
+</style>
+</head>
+<body>
+
+<h1 class="app-title">OBSCURA</h1>
+<p class="app-sub">VINTAGE FILM FILTERS</p>
+<hr class="divider">
+
+<div class="upload-zone" id="uploadZone">
+  <input type="file" id="fileInput" accept="image/*" style="display:none">
+  <div class="u-icon">⊕</div>
+  <div class="u-text">Drop a photo or click to upload</div>
+  <div class="u-hint">JPG &nbsp;·&nbsp; PNG &nbsp;·&nbsp; WEBP</div>
+</div>
+
+<div id="preview">
+  <div class="film-edge" id="filmEdge"></div>
+
+  <div class="canvas-wrap">
+    <canvas id="mainCanvas"></canvas>
+  </div>
+
+  <p class="sec-label">── FILTER</p>
+  <div class="filter-strip" id="filterStrip"></div>
+
+  <p class="sec-label">── ADJUST</p>
+  <div class="controls">
+    <div class="ctrl-row">
+      <span class="ctrl-lbl">INTENSITY</span>
+      <input type="range" id="intensity" min="0" max="100" value="100" step="1">
+      <span class="ctrl-val" id="iVal">100%</span>
+    </div>
+    <div class="ctrl-row">
+      <span class="ctrl-lbl">GRAIN</span>
+      <input type="range" id="grain" min="0" max="100" value="45" step="1">
+      <span class="ctrl-val" id="gVal">45%</span>
+    </div>
+    <div class="ctrl-row">
+      <span class="ctrl-lbl">VIGNETTE</span>
+      <input type="range" id="vignette" min="0" max="100" value="60" step="1">
+      <span class="ctrl-val" id="vVal">60%</span>
+    </div>
+  </div>
+
+  <div class="film-info">
+    <div class="info-item">
+      <span class="info-val" id="filterName">ORIGINAL</span>
+      <span class="info-lbl">FILTER</span>
+    </div>
+    <div class="info-item">
+      <span class="info-val" id="dimInfo">—</span>
+      <span class="info-lbl">DIMENSIONS</span>
+    </div>
+    <div class="info-item">
+      <span class="info-val" id="frameNum">001</span>
+      <span class="info-lbl">FRAME</span>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="new-btn" onclick="resetApp()">← NEW</button>
+    <button id="dlBtn" onclick="dlImage()">SAVE PHOTO ↓</button>
+  </div>
+</div>
+
+<script>
+const FILTERS = [
+  {id:'original',  name:'ORIGINAL',    css:'none',                                                              vig:0   },
+  {id:'kodachrome',name:'KODACHROME',  css:'saturate(1.4) contrast(1.15) brightness(1.05)',                     vig:0.3 },
+  {id:'polaroid',  name:'POLAROID',    css:'saturate(0.75) brightness(1.12) contrast(0.88) sepia(0.15)',        vig:0.18},
+  {id:'lomo',      name:'LOMO',        css:'saturate(1.5) contrast(1.3) brightness(0.88)',                      vig:0.55},
+  {id:'noir',      name:'NOIR',        css:'grayscale(1) contrast(1.35) brightness(0.92)',                      vig:0.45},
+  {id:'nashville', name:'NASHVILLE',   css:'saturate(0.85) sepia(0.25) brightness(1.08) hue-rotate(-8deg)',     vig:0.18},
+  {id:'faded',     name:'FADED FILM',  css:'saturate(0.55) brightness(1.08) contrast(0.82) sepia(0.25)',        vig:0.12},
+  {id:'aged',      name:'AGED PRINT',  css:'sepia(0.75) contrast(1.05) brightness(0.97)',                       vig:0.32},
+  {id:'cross',     name:'CROSS PROC',  css:'saturate(1.6) contrast(1.2) hue-rotate(25deg)',                     vig:0.28},
+  {id:'redscale',  name:'REDSCALE',    css:'saturate(1.4) hue-rotate(-25deg) contrast(1.15) sepia(0.2)',        vig:0.25},
+  {id:'tungsten',  name:'TUNGSTEN',    css:'saturate(0.9) hue-rotate(30deg) contrast(1.1) brightness(0.95)',    vig:0.35},
+  {id:'summer70s', name:'SUMMER 70s',  css:'saturate(0.8) sepia(0.4) brightness(1.1) contrast(0.95) hue-rotate(-15deg)', vig:0.2},
+];
+
+let img = null, W = 0, H = 0, curF = 0, grainTex = null;
+const mc = document.getElementById('mainCanvas');
+const mctx = mc.getContext('2d');
+const uz = document.getElementById('uploadZone');
+const fi = document.getElementById('fileInput');
+
+uz.addEventListener('click', () => fi.click());
+uz.addEventListener('dragover', e => { e.preventDefault(); uz.classList.add('drag'); });
+uz.addEventListener('dragleave', () => uz.classList.remove('drag'));
+uz.addEventListener('drop', e => { e.preventDefault(); uz.classList.remove('drag'); if (e.dataTransfer.files[0]) load(e.dataTransfer.files[0]); });
+fi.addEventListener('change', () => { if (fi.files[0]) load(fi.files[0]); });
+
+document.getElementById('intensity').addEventListener('input', function() { document.getElementById('iVal').textContent = this.value + '%'; render(); });
+document.getElementById('grain').addEventListener('input', function() { document.getElementById('gVal').textContent = this.value + '%'; render(); });
+document.getElementById('vignette').addEventListener('input', function() { document.getElementById('vVal').textContent = this.value + '%'; render(); });
+
+function load(file) {
+  const r = new FileReader();
+  r.onload = e => {
+    const i = new Image();
+    i.onload = () => {
+      img = i;
+      const MAX = 1400;
+      const ratio = Math.min(MAX / i.naturalWidth, MAX / i.naturalHeight, 1);
+      W = Math.round(i.naturalWidth * ratio);
+      H = Math.round(i.naturalHeight * ratio);
+      mc.width = W; mc.height = H;
+      document.getElementById('dimInfo').textContent = i.naturalWidth + '×' + i.naturalHeight;
+      genGrain();
+      buildFilmEdge();
+      uz.style.display = 'none';
+      const pv = document.getElementById('preview');
+      pv.style.display = 'flex';
+      buildThumbs();
+      selectF(1); // default to Kodachrome
+    };
+    i.src = e.target.result;
+  };
+  r.readAsDataURL(file);
+}
+
+function buildFilmEdge() {
+  const fe = document.getElementById('filmEdge');
+  fe.innerHTML = '';
+  for (let i = 0; i < 24; i++) {
+    const s = document.createElement('div');
+    s.className = 'sprocket';
+    fe.appendChild(s);
+  }
+}
+
+function genGrain() {
+  grainTex = document.createElement('canvas');
+  grainTex.width = W; grainTex.height = H;
+  const gc = grainTex.getContext('2d');
+  const id = gc.createImageData(W, H);
+  for (let i = 0; i < id.data.length; i += 4) {
+    const v = Math.floor(Math.random() * 255);
+    id.data[i] = v; id.data[i+1] = v; id.data[i+2] = v; id.data[i+3] = 255;
+  }
+  gc.putImageData(id, 0, 0);
+}
+
+function buildThumbs() {
+  const strip = document.getElementById('filterStrip');
+  strip.innerHTML = '';
+  FILTERS.forEach((f, i) => {
+    const item = document.createElement('button');
+    item.className = 'fi';
+    item.onclick = () => selectF(i);
+    const wrap = document.createElement('div');
+    wrap.className = 'fi-thumb';
+    const tc = document.createElement('canvas');
+    tc.width = 80; tc.height = 60;
+    const tctx = tc.getContext('2d');
+    tctx.drawImage(img, 0, 0, 80, 60);
+    tc.style.filter = f.css === 'none' ? 'none' : f.css;
+    wrap.appendChild(tc);
+    item.appendChild(wrap);
+    const nm = document.createElement('div');
+    nm.className = 'fi-name';
+    nm.textContent = f.name;
+    item.appendChild(nm);
+    strip.appendChild(item);
+  });
+}
+
+function selectF(idx) {
+  curF = idx;
+  document.querySelectorAll('.fi').forEach((el, i) => el.classList.toggle('active', i === idx));
+  document.getElementById('filterName').textContent = FILTERS[idx].name;
+  document.getElementById('frameNum').textContent = String(idx + 1).padStart(3, '0');
+  render();
+}
+
+function render() {
+  if (!img) return;
+  const f = FILTERS[curF];
+  const intensity = parseFloat(document.getElementById('intensity').value) / 100;
+  const grainAmt = parseFloat(document.getElementById('grain').value) / 100;
+  const vigAmt = parseFloat(document.getElementById('vignette').value) / 100;
+  mctx.clearRect(0, 0, W, H);
+  mctx.filter = 'none';
+  mctx.drawImage(img, 0, 0, W, H);
+  if (f.css !== 'none' && intensity > 0) {
+    const tmp = document.createElement('canvas');
+    tmp.width = W; tmp.height = H;
+    const tctx = tmp.getContext('2d');
+    tctx.filter = f.css;
+    tctx.drawImage(img, 0, 0, W, H);
+    tctx.filter = 'none';
+    mctx.globalAlpha = intensity;
+    mctx.drawImage(tmp, 0, 0);
+    mctx.globalAlpha = 1;
+  }
+  const vigStr = f.vig * vigAmt;
+  if (vigStr > 0) {
+    const r = Math.max(W, H) * 0.72;
+    const vg = mctx.createRadialGradient(W/2, H/2, Math.min(W,H)*0.18, W/2, H/2, r);
+    vg.addColorStop(0, 'rgba(0,0,0,0)');
+    vg.addColorStop(1, `rgba(0,0,0,${vigStr})`);
+    mctx.fillStyle = vg;
+    mctx.fillRect(0, 0, W, H);
+  }
+  if (grainAmt > 0 && grainTex) {
+    mctx.globalCompositeOperation = 'overlay';
+    mctx.globalAlpha = grainAmt * 0.18;
+    mctx.drawImage(grainTex, 0, 0);
+    mctx.globalCompositeOperation = 'source-over';
+    mctx.globalAlpha = 1;
+  }
+}
+
+function dlImage() {
+  const link = document.createElement('a');
+  link.download = 'obscura-' + FILTERS[curF].id + '.jpg';
+  link.href = mc.toDataURL('image/jpeg', 0.92);
+  link.click();
+}
+
+function resetApp() {
+  img = null; fi.value = '';
+  document.getElementById('preview').style.display = 'none';
+  uz.style.display = 'flex';
+  document.getElementById('intensity').value = 100; document.getElementById('iVal').textContent = '100%';
+  document.getElementById('grain').value = 45; document.getElementById('gVal').textContent = '45%';
+  document.getElementById('vignette').value = 60; document.getElementById('vVal').textContent = '60%';
+}
+</script>
+</body>
+</html>
