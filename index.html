@@ -2,21 +2,131 @@
 <html>
 <head>
     <title>Gayatri Das - Portfolio</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        .container {
+            max-width: 750px;
+            margin: 0 auto;
+        }
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 50px;
+        }
+        .header h1 {
+            font-size: 3em;
+            letter-spacing: 2px;
+            margin-bottom: 12px;
+        }
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.85;
+            line-height: 1.6;
+        }
+        .badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            margin-bottom: 15px;
+            letter-spacing: 1px;
+        }
+        h2 {
+            color: white;
+            font-size: 1.4em;
+            margin-bottom: 20px;
+            letter-spacing: 1px;
+            opacity: 0.9;
+        }
+        .project-card {
+            background: white;
+            border-radius: 16px;
+            padding: 28px 30px;
+            margin: 16px 0;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: transform 0.2s;
+        }
+        .project-card:hover {
+            transform: translateY(-4px);
+        }
+        .card-left h3 {
+            font-size: 1.25em;
+            color: #2d2d2d;
+            margin-bottom: 6px;
+        }
+        .card-left p {
+            color: #888;
+            font-size: 0.95em;
+        }
+        .card-tag {
+            background: #f0eeff;
+            color: #764ba2;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+        .open-btn {
+            display: inline-block;
+            margin-top: 12px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+        .footer {
+            text-align: center;
+            color: rgba(255,255,255,0.6);
+            margin-top: 50px;
+            font-size: 0.85em;
+        }
+    </style>
 </head>
-<body style="font-family: Arial; padding: 40px;">
+<body>
+<div class="container">
 
-    <h1>Gayatri Das</h1>
-    <p>AI-assisted projects built using Claude. Focused on debugging, iteration, and improving output quality.</p>
+    <div class="header">
+        <div class="badge">✦ PORTFOLIO</div>
+        <h1>Gayatri Das</h1>
+        <p>AI-assisted projects built using Claude.<br>Focused on debugging, iteration, and improving output quality.</p>
+    </div>
 
-    <h2>Projects</h2>
-    <ul>
-        <li>
-            <a href="obscura.html" target="_blank">AI Photo Filter App</a>
-        </li>
-        <li>
-            <a href="librarium.html" target="_blank">AI Book Tracking App</a>
-        </li>
-    </ul>
+    <h2>PROJECTS</h2>
 
+    <div class="project-card">
+        <div class="card-left">
+            <span class="card-tag">AI + Photos</span>
+            <h3>AI Photo Filter App</h3>
+            <p>Apply AI-powered filters to your photos.</p>
+            <a href="obscura.html" target="_blank" class="open-btn">Open App →</a>
+        </div>
+    </div>
+
+    <div class="project-card">
+        <div class="card-left">
+            <span class="card-tag">AI + Books</span>
+            <h3>AI Book Tracking App</h3>
+            <p>Track and manage your reading list with AI.</p>
+            <a href="librarium.html" target="_blank" class="open-btn">Open App →</a>
+        </div>
+    </div>
+
+    <div class="footer">Built with Claude · 2025</div>
+
+</div>
 </body>
 </html>
