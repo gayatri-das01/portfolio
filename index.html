@@ -1,394 +1,96 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Briefd — AI Meeting Notes</title>
+    <title>Gayatri Das - Portfolio</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: Arial, sans-serif; color: #1a1a1a; background: #fff; }
-
-        /* NAV */
-        nav {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 20px 60px;
-            border-bottom: 1px solid #eee;
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
         }
-        .logo { font-size: 1.4em; font-weight: bold; color: #2563eb; }
-        .nav-btn {
-            background: #2563eb;
+        .container { max-width: 750px; margin: 0 auto; }
+        .header { text-align: center; color: white; margin-bottom: 50px; }
+        .badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
             color: white;
-            padding: 10px 22px;
-            border-radius: 8px;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            margin-bottom: 15px;
+            letter-spacing: 1px;
+        }
+        .header h1 { font-size: 3em; letter-spacing: 2px; margin-bottom: 12px; }
+        .header p { font-size: 1.1em; opacity: 0.85; line-height: 1.6; }
+        h2 { color: white; font-size: 1.4em; margin-bottom: 20px; letter-spacing: 1px; opacity: 0.9; }
+        .project-card {
+            background: white;
+            border-radius: 16px;
+            padding: 28px 30px;
+            margin: 16px 0;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            transition: transform 0.2s;
+        }
+        .project-card:hover { transform: translateY(-4px); }
+        .card-tag {
+            background: #f0eeff;
+            color: #764ba2;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: bold;
+            display: inline-block;
+            margin-bottom: 10px;
+        }
+        .project-card h3 { font-size: 1.25em; color: #2d2d2d; margin-bottom: 8px; }
+        .project-card p { color: #666; font-size: 0.95em; line-height: 1.6; margin-bottom: 15px; }
+        .open-btn {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 25px;
             text-decoration: none;
             font-size: 0.9em;
             font-weight: bold;
         }
-
-        /* HERO */
-        .hero {
-            text-align: center;
-            padding: 90px 20px 70px;
-            background: linear-gradient(180deg, #eff6ff 0%, #fff 100%);
-        }
-        .hero-badge {
-            display: inline-block;
-            background: #dbeafe;
-            color: #2563eb;
-            padding: 6px 16px;
-            border-radius: 20px;
-            font-size: 0.85em;
-            font-weight: bold;
-            margin-bottom: 24px;
-        }
-        .hero h1 {
-            font-size: 3em;
-            line-height: 1.2;
-            max-width: 700px;
-            margin: 0 auto 20px;
-            color: #0f172a;
-        }
-        .hero h1 span { color: #2563eb; }
-        .hero p {
-            font-size: 1.2em;
-            color: #555;
-            max-width: 550px;
-            margin: 0 auto 36px;
-            line-height: 1.7;
-        }
-        .hero-btns { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
-        .btn-primary {
-            background: #2563eb;
-            color: white;
-            padding: 14px 32px;
-            border-radius: 10px;
-            text-decoration: none;
-            font-weight: bold;
-            font-size: 1em;
-        }
-        .btn-secondary {
-            background: white;
-            color: #2563eb;
-            padding: 14px 32px;
-            border-radius: 10px;
-            text-decoration: none;
-            font-weight: bold;
-            font-size: 1em;
-            border: 2px solid #2563eb;
-        }
-
-        /* SOCIAL PROOF */
-        .proof {
-            text-align: center;
-            padding: 30px 20px;
-            color: #888;
-            font-size: 0.95em;
-            border-bottom: 1px solid #eee;
-        }
-        .proof strong { color: #333; }
-
-        /* PROBLEM */
-        .problem {
-            max-width: 700px;
-            margin: 70px auto;
-            padding: 0 20px;
-            text-align: center;
-        }
-        .problem h2 { font-size: 2em; margin-bottom: 20px; }
-        .problem p { font-size: 1.1em; color: #555; line-height: 1.8; }
-
-        /* FEATURES */
-        .features { background: #f8fafc; padding: 70px 20px; }
-        .features h2 { text-align: center; font-size: 2em; margin-bottom: 50px; }
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 30px;
-            max-width: 900px;
-            margin: 0 auto;
-        }
-        .feature-card {
-            background: white;
-            border-radius: 14px;
-            padding: 30px 25px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.06);
-        }
-        .feature-icon { font-size: 2em; margin-bottom: 14px; }
-        .feature-card h3 { font-size: 1.1em; margin-bottom: 10px; }
-        .feature-card p { color: #666; font-size: 0.95em; line-height: 1.6; }
-
-        /* BEFORE/AFTER */
-        .compare { max-width: 850px; margin: 70px auto; padding: 0 20px; }
-        .compare h2 { text-align: center; font-size: 2em; margin-bottom: 40px; }
-        .compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
-        .compare-box { border-radius: 14px; padding: 28px; }
-        .before { background: #fff1f2; border: 2px solid #fecdd3; }
-        .after { background: #f0fdf4; border: 2px solid #bbf7d0; }
-        .compare-box h3 { font-size: 1.1em; margin-bottom: 16px; }
-        .compare-box ul { list-style: none; }
-        .compare-box ul li { padding: 6px 0; font-size: 0.95em; color: #444; line-height: 1.5; }
-        .before ul li::before { content: "✗ "; color: #f43f5e; font-weight: bold; }
-        .after ul li::before { content: "✓ "; color: #22c55e; font-weight: bold; }
-
-        /* TESTIMONIALS */
-        .testimonials { background: #f8fafc; padding: 70px 20px; }
-        .testimonials h2 { text-align: center; font-size: 2em; margin-bottom: 40px; }
-        .testi-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 24px;
-            max-width: 900px;
-            margin: 0 auto;
-        }
-        .testi-card {
-            background: white;
-            border-radius: 14px;
-            padding: 28px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.06);
-        }
-        .testi-card p { color: #444; font-size: 0.95em; line-height: 1.7; margin-bottom: 16px; font-style: italic; }
-        .testi-name { font-weight: bold; font-size: 0.9em; color: #2563eb; }
-        .testi-role { font-size: 0.85em; color: #888; }
-
-        /* PRICING */
-        .pricing { max-width: 850px; margin: 70px auto; padding: 0 20px; }
-        .pricing h2 { text-align: center; font-size: 2em; margin-bottom: 40px; }
-        .pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 24px; }
-        .price-card {
-            border-radius: 14px;
-            padding: 32px 28px;
-            border: 2px solid #e2e8f0;
-            text-align: center;
-        }
-        .price-card.popular { border-color: #2563eb; position: relative; }
-        .popular-badge {
-            position: absolute;
-            top: -14px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #2563eb;
-            color: white;
-            padding: 4px 16px;
-            border-radius: 20px;
-            font-size: 0.8em;
-            font-weight: bold;
-        }
-        .price-card h3 { font-size: 1.1em; margin-bottom: 10px; }
-        .price { font-size: 2.5em; font-weight: bold; color: #0f172a; margin-bottom: 6px; }
-        .price span { font-size: 0.5em; color: #888; }
-        .price-card ul { list-style: none; text-align: left; margin: 20px 0; }
-        .price-card ul li { padding: 6px 0; font-size: 0.9em; color: #555; }
-        .price-card ul li::before { content: "✓ "; color: #22c55e; font-weight: bold; }
-        .price-btn {
-            display: block;
-            background: #2563eb;
-            color: white;
-            padding: 12px;
-            border-radius: 8px;
-            text-decoration: none;
-            font-weight: bold;
-            font-size: 0.95em;
-            margin-top: 10px;
-        }
-        .price-btn.outline {
-            background: white;
-            color: #2563eb;
-            border: 2px solid #2563eb;
-        }
-
-        /* CTA */
-        .cta {
-            background: linear-gradient(135deg, #2563eb, #7c3aed);
-            color: white;
-            text-align: center;
-            padding: 80px 20px;
-        }
-        .cta h2 { font-size: 2.2em; margin-bottom: 16px; }
-        .cta p { font-size: 1.1em; opacity: 0.85; margin-bottom: 32px; }
-        .cta-btn {
-            background: white;
-            color: #2563eb;
-            padding: 16px 40px;
-            border-radius: 10px;
-            text-decoration: none;
-            font-weight: bold;
-            font-size: 1.05em;
-            display: inline-block;
-        }
-
-        /* FOOTER */
-        footer {
-            text-align: center;
-            padding: 30px;
-            color: #aaa;
-            font-size: 0.85em;
-            border-top: 1px solid #eee;
-        }
-
-        @media(max-width: 600px) {
-            nav { padding: 16px 20px; }
-            .hero h1 { font-size: 2em; }
-            .compare-grid { grid-template-columns: 1fr; }
-        }
+        .footer { text-align: center; color: rgba(255,255,255,0.6); margin-top: 50px; font-size: 0.85em; }
     </style>
 </head>
 <body>
-
-<!-- NAV -->
-<nav>
-    <div class="logo">Briefd</div>
-    <a href="#" class="nav-btn">Try Free</a>
-</nav>
-
-<!-- HERO -->
-<div class="hero">
-    <div class="hero-badge">⚡ AI-Powered Meeting Intelligence</div>
-    <h1>Your meetings end.<br><span>Your clarity shouldn't.</span></h1>
-    <p>Briefd turns messy meeting notes into clean action items, owner assignments, and follow-up emails — in seconds.</p>
-    <div class="hero-btns">
-        <a href="#" class="btn-primary">Start for free →</a>
-        <a href="#" class="btn-secondary">See how it works</a>
+<div class="container">
+    <div class="header">
+        <div class="badge">✦ PORTFOLIO</div>
+        <h1>Gayatri Das</h1>
+        <p>AI-assisted projects built using Claude.<br>Focused on debugging, iteration, and improving output quality.</p>
     </div>
-</div>
 
-<!-- PROOF -->
-<div class="proof">
-    Trusted by <strong>4,000+ teams</strong> at startups and fast-moving companies worldwide
-</div>
+    <h2>PROJECTS</h2>
 
-<!-- PROBLEM -->
-<div class="problem">
-    <h2>Meetings are expensive.<br>Forgetting what was decided is worse.</h2>
-    <p>The average knowledge worker spends 4+ hours a week in meetings — and another 2 hours trying to remember what was actually agreed. Briefd fixes the second problem completely.</p>
-</div>
-
-<!-- FEATURES -->
-<div class="features">
-    <h2>Everything you need. Nothing you don't.</h2>
-    <div class="features-grid">
-        <div class="feature-card">
-            <div class="feature-icon">📋</div>
-            <h3>Instant Summaries</h3>
-            <p>Paste your raw notes. Get a clean, structured summary in under 10 seconds.</p>
-        </div>
-        <div class="feature-card">
-            <div class="feature-icon">✅</div>
-            <h3>Action Item Extraction</h3>
-            <p>Briefd identifies every task, assigns an owner, and sets a default deadline.</p>
-        </div>
-        <div class="feature-card">
-            <div class="feature-icon">📧</div>
-            <h3>Follow-up Email Draft</h3>
-            <p>One click generates a professional follow-up email ready to send to your team.</p>
-        </div>
-        <div class="feature-card">
-            <div class="feature-icon">🔗</div>
-            <h3>Slack & Notion Sync</h3>
-            <p>Push summaries directly to your team's Slack channel or Notion workspace.</p>
-        </div>
+    <div class="project-card">
+        <span class="card-tag">AI + Photography</span>
+        <h3>Obscura — AI Photo Filter App</h3>
+        <p>Most photo apps give you the same generic filters everyone else uses. Obscura was built for people who want something more specific — Polaroid, Chrome, and darkroom-style filters that give photos a deliberate, curated aesthetic. Upload your photo, pick your vibe, done.</p>
+        <a href="obscura.html" target="_blank" class="open-btn">Open App →</a>
     </div>
-</div>
 
-<!-- BEFORE/AFTER -->
-<div class="compare">
-    <h2>Before Briefd vs. After Briefd</h2>
-    <div class="compare-grid">
-        <div class="compare-box before">
-            <h3>❌ Without Briefd</h3>
-            <ul>
-                <li>3 pages of unstructured notes</li>
-                <li>Nobody knows who owns what</li>
-                <li>Follow-up email takes 30 minutes</li>
-                <li>Half the action items get forgotten</li>
-                <li>You have the same meeting next week</li>
-            </ul>
-        </div>
-        <div class="compare-box after">
-            <h3>✅ With Briefd</h3>
-            <ul>
-                <li>Clean 5-line summary instantly</li>
-                <li>Every task has a clear owner</li>
-                <li>Follow-up email written in seconds</li>
-                <li>Nothing falls through the cracks</li>
-                <li>Your team actually moves forward</li>
-            </ul>
-        </div>
+    <div class="project-card">
+        <span class="card-tag">AI + Reading</span>
+        <h3>Librarium — AI Book Tracking App</h3>
+        <p>Goodreads is cluttered and uninspiring. Librarium is a minimal book tracker that actually feels good to use — as you log books, they stack up visually like a real library shelf. Built for readers who want to see their progress, not just count it.</p>
+        <a href="librarium.html" target="_blank" class="open-btn">Open App →</a>
     </div>
-</div>
 
-<!-- TESTIMONIALS -->
-<div class="testimonials">
-    <h2>What our users say</h2>
-    <div class="testi-grid">
-        <div class="testi-card">
-            <p>"We used to lose 45 minutes after every team meeting just writing up notes. Briefd cut that to zero."</p>
-            <div class="testi-name">Rahul M.</div>
-            <div class="testi-role">Head of Product, Series A startup</div>
-        </div>
-        <div class="testi-card">
-            <p>"The follow-up email feature alone is worth it. I send better recaps in 10 seconds than I used to write in half an hour."</p>
-            <div class="testi-name">Sarah K.</div>
-            <div class="testi-role">Operations Lead, Remote Team of 12</div>
-        </div>
-        <div class="testi-card">
-            <p>"Finally an AI tool that actually saves time instead of creating more work to manage."</p>
-            <div class="testi-name">James T.</div>
-            <div class="testi-role">Founder, B2B SaaS company</div>
-        </div>
+    <div class="project-card">
+        <span class="card-tag">Marketing · Landing Page</span>
+        <h3>Briefd — AI Meeting Notes Landing Page</h3>
+        <p>A fully written and designed marketing landing page for a B2B SaaS product. Built to demonstrate copywriting, positioning, and conversion-focused design — the kind of work that turns product features into reasons to buy.</p>
+        <a href="briefd.html" target="_blank" class="open-btn">Open Project →</a>
     </div>
+
+    <div class="footer">Built with Claude · 2025</div>
 </div>
-
-<!-- PRICING -->
-<div class="pricing">
-    <h2>Simple pricing. No surprises.</h2>
-    <div class="pricing-grid">
-        <div class="price-card">
-            <h3>Starter</h3>
-            <div class="price">$0<span>/mo</span></div>
-            <ul>
-                <li>10 summaries per month</li>
-                <li>Action item extraction</li>
-                <li>Email export</li>
-            </ul>
-            <a href="#" class="price-btn outline">Get started free</a>
-        </div>
-        <div class="price-card popular">
-            <div class="popular-badge">MOST POPULAR</div>
-            <h3>Pro</h3>
-            <div class="price">$12<span>/mo</span></div>
-            <ul>
-                <li>Unlimited summaries</li>
-                <li>Slack & Notion sync</li>
-                <li>Custom templates</li>
-                <li>Priority support</li>
-            </ul>
-            <a href="#" class="price-btn">Start Pro trial</a>
-        </div>
-        <div class="price-card">
-            <h3>Team</h3>
-            <div class="price">$39<span>/mo</span></div>
-            <ul>
-                <li>Everything in Pro</li>
-                <li>Up to 10 team members</li>
-                <li>Admin dashboard</li>
-                <li>Usage analytics</li>
-            </ul>
-            <a href="#" class="price-btn outline">Contact us</a>
-        </div>
-    </div>
-</div>
-
-<!-- CTA -->
-<div class="cta">
-    <h2>Stop losing decisions in your notes.</h2>
-    <p>Join 4,000+ teams who run tighter meetings with Briefd.</p>
-    <a href="#" class="cta-btn">Try Briefd free — no credit card needed</a>
-</div>
-
-<!-- FOOTER -->
-<footer>
-    © 2025 Briefd. Built as a portfolio project by Gayatri Das.
-</footer>
-
 </body>
 </html>
